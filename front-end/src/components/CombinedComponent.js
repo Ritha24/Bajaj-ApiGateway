@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import CreateForm from './CreateForm';
 import DisplayData from './DisplayData';
-import logo from './logo.png'; // Import your logo file
+import logo from './logo.png';
 
 const CombinedComponent = () => {
-  const [isCreateClicked, setIsCreateClicked] = useState(false); // Set initial state to false
+  const [isCreateClicked, setIsCreateClicked] = useState(false);
+  const [isDataRefreshNeeded, setIsDataRefreshNeeded] = useState(true); // Set to true initially to display the grid
 
   const handleCreateClick = () => {
     setIsCreateClicked(true);
@@ -12,21 +13,28 @@ const CombinedComponent = () => {
 
   const handleCloseCreateForm = () => {
     setIsCreateClicked(false);
+    setIsDataRefreshNeeded(true); // Trigger data refresh
+    console.log('Form closed, refreshing data...');
   };
+
+  const handleDataRefresh = () => {
+    setIsDataRefreshNeeded(prevState => !prevState); // Toggle to trigger data refresh
+    console.log('Data refreshed!');
+  };
+
+  console.log('Rendering CombinedComponent');
 
   return (
     <div className="container vh-100">
       <div className="fixed-top bg-light p-3 d-flex justify-content-between align-items-center">
-        <div className="d-flex align-items-center"> {/* Logo and Header */}
-          <img src={logo} alt="Logo" style={{ width: '100px', height: '70px', marginRight: '20px', marginLeft:'20px'}} /> {/* Adjust width and height as needed */}
-          {/* <h1>Header</h1> Your header content goes here */}
+        <div className="d-flex align-items-center">
+          <img src={logo} alt="Logo" style={{ width: '100px', height: '70px', marginRight: '20px', marginLeft:'20px'}} />
         </div>
-        <div> {/* Right-aligned buttons */}
+        <div>
           <button className="btn btn-primary btn-md me-2" onClick={handleCreateClick}>Create</button>
-          {/* <button className="btn btn-primary btn-md" onClick={handleFetchClick}>Fetch</button> */}
         </div>
       </div>
-      <div className="mt-5"> {/* Add margin-top to push content below fixed header */}
+      <div className="mt-5">
         {isCreateClicked && (
           <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
             <div className="modal-dialog" role="document">
@@ -38,16 +46,13 @@ const CombinedComponent = () => {
                   </button>
                 </div>
                 <div className="modal-body">
-                  <CreateForm />
+                  <CreateForm onClose={handleCloseCreateForm} onDataRefresh={handleDataRefresh} />
                 </div>
-                {/* <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={handleCloseCreateForm}>Close</button>
-                </div> */}
               </div>
             </div>
           </div>
         )}
-        <DisplayData />
+        <DisplayData isDataRefreshNeeded={isDataRefreshNeeded} />
       </div>
     </div>
   );

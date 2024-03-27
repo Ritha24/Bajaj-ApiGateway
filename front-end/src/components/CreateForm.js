@@ -1,8 +1,9 @@
+// CreateForm.js
 import React, { useState } from 'react';
 import { addData } from '../databaseService';
 import './CreateForm.css'; // Import CSS file
 
-const CreateForm = ({ handleFetchClick }) => {
+const CreateForm = ({ onClose }) => {
     const [formData, setFormData] = useState({ url: '', baseurl: '', method: '' });
 
     const handleChange = (e) => {
@@ -15,7 +16,9 @@ const CreateForm = ({ handleFetchClick }) => {
             await addData(formData.url, formData.baseurl, formData.method);
             setFormData({ url: '', baseurl: '', method: '' });
             alert('Data added successfully');
-            handleFetchClick();
+            onClose(); // Close the modal
+            
+            
         } catch (error) {
             console.error('Error adding data:', error);
             alert('Failed to add data. Please try again.');
