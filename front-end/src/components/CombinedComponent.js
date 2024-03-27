@@ -4,17 +4,14 @@ import DisplayData from './DisplayData';
 import logo from './logo.png'; // Import your logo file
 
 const CombinedComponent = () => {
-  const [isCreateClicked, setIsCreateClicked] = useState(false); // Set initial state to true
-  const [isFetchClicked, setIsFetchClicked] = useState(true);
+  const [isCreateClicked, setIsCreateClicked] = useState(false); // Set initial state to false
 
   const handleCreateClick = () => {
     setIsCreateClicked(true);
-    setIsFetchClicked(false); // Ensure only one form is visible at a time
   };
 
-  const handleFetchClick = () => {
+  const handleCloseCreateForm = () => {
     setIsCreateClicked(false);
-    setIsFetchClicked(true);
   };
 
   return (
@@ -30,8 +27,27 @@ const CombinedComponent = () => {
         </div>
       </div>
       <div className="mt-5"> {/* Add margin-top to push content below fixed header */}
-        {isCreateClicked && <CreateForm handleFetchClick={handleFetchClick} />}
-        {isFetchClicked && <DisplayData />}
+        {isCreateClicked && (
+          <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+            <div className="modal-dialog" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Create Form</h5>
+                  <button type="button" className="close" onClick={handleCloseCreateForm} aria-label="Close" style={{ position: 'absolute', top: '15px', right: '15px', zIndex: '1' }}>
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <CreateForm />
+                </div>
+                {/* <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={handleCloseCreateForm}>Close</button>
+                </div> */}
+              </div>
+            </div>
+          </div>
+        )}
+        <DisplayData />
       </div>
     </div>
   );
