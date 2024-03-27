@@ -34,4 +34,9 @@
   .create-form-container button[type="submit"]:hover {
     background-color: #0056b3;
   }
+  button[disabled]:hover {
+    cursor: not-allowed;
+    background-color: inherit; /* Keep the button's original background color */
+    color: inherit; /* Keep the button's original text color */
+  }
   

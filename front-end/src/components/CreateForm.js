@@ -1,9 +1,8 @@
-// frontend/src/components/CreateForm.js
 import React, { useState } from 'react';
 import { addData } from '../databaseService';
 import './CreateForm.css'; // Import CSS file
 
-const CreateForm = () => {
+const CreateForm = ({ handleFetchClick }) => {
     const [formData, setFormData] = useState({ url: '', baseurl: '', method: '' });
 
     const handleChange = (e) => {
@@ -16,14 +15,18 @@ const CreateForm = () => {
             await addData(formData.url, formData.baseurl, formData.method);
             setFormData({ url: '', baseurl: '', method: '' });
             alert('Data added successfully');
+            handleFetchClick();
         } catch (error) {
             console.error('Error adding data:', error);
             alert('Failed to add data. Please try again.');
         }
     };
 
+    // Check if any of the input fields are empty
+    const isFormEmpty = Object.values(formData).some(value => value.trim() === ''); // trim() to ignore whitespace-only inputs
+
     return (
-        <div className="create-form-container"> {/* Apply the container class */}
+        <div className="create-form-container">
             <h2>Create Data</h2>
             <form onSubmit={handleSubmit}>
                 <input
@@ -47,7 +50,8 @@ const CreateForm = () => {
                     onChange={handleChange}
                     placeholder="Enter Method"
                 />
-                <button type="submit">Create</button>
+                {/* Disable the button if any input field is empty */}
+                <button type="submit" disabled={isFormEmpty}>Create</button>
             </form>
         </div>
     );
