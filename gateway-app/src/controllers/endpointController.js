@@ -1,28 +1,64 @@
 const express = require('express');
-const fetchEndpointsMiddleware = require('../middlewares/fetchEndpointsMiddleware');
 const DataService = require('../services/dataService');
+const CircuitBreaker = require('opossum');
+const axios = require('axios');
 
-const app = express();
+const router = express.Router();
 
-app.use(fetchEndpointsMiddleware);
+// Define a fallback function
+const fallbackFunction = async () => {
+    try {
+        // Make a call to your fallback URL
+        const response = await axios.get('http://localhost:3012/api/data');
+        return response.data;
+    } catch (error) {
+        // Handle errors for the fallback call
+        console.error('Fallback function error:', error);
+        throw error;
+    }
+};
 
-// Define routes using fetched data from the database
-app.use((req, res, next) => {
+// Create a new circuit breaker instance with fallback function
+const circuitBreaker = new CircuitBreaker(DataService.fetchDataFromAPI, {
+    timeout: 3000,
+    errorThresholdPercentage: 50,
+    resetTimeout: 10000,
+    fallback: fallbackFunction // Pass the fallback function
+});
+
+// Handle circuit breaker events
+circuitBreaker.on('open', () => {
+    console.log('Circuit breaker opened');
+});
+
+circuitBreaker.on('halfOpen', () => {
+    console.log('Circuit breaker half-opened');
+});
+
+circuitBreaker.on('close', () => {
+    console.log('Circuit breaker closed');
+});
+
+// Define routes
+router.use((req, res, next) => {
     try {
         // Loop through fetched endpoints and define routes dynamically
         req.endpoints.forEach(endpoint => {
             // Check if the method is GET
             if (endpoint.method.toUpperCase() === 'GET') {
-                app.get(endpoint.url, async (req, res) => {
+                router.get(endpoint.url, async (req, res) => {
                     try {
-                        // Fetch data from the API using the base URL from the database
-                        const data = await DataService.fetchDataFromAPI(endpoint.baseurl);
+                        // Execute the API call through the circuit breaker
+                        const data = await circuitBreaker.fire(endpoint.baseurl).catch(() => {
+                            // Fallback to the fallbackFunction if the request fails
+                            return fallbackFunction();
+                        });
                         // Send the data from the API back to the client side
                         res.json(data);
                     } catch (error) {
-                        // Handle errors
-                        console.error('Error fetching data from API:', error);
-                        res.status(500).json({ error: 'Failed to fetch data from API' });
+                        // Handle circuit breaker errors
+                        console.error('Circuit breaker error:', error);
+                        res.status(500).json({ error: 'Circuit breaker triggered' });
                     }
                 });
             }
@@ -35,17 +71,23 @@ app.use((req, res, next) => {
 });
 
 // Route to concatenate responses from all endpoints in the database
-app.get('/concat/all', async (req, res) => {
+router.get('/concat/all', async (req, res) => {
     try {
         let concatenatedData = [];
+        let failedUrls = [];
 
         // Loop through fetched endpoints
         for (const endpoint of req.endpoints) {
             // Check if the method is GET
             if (endpoint.method.toUpperCase() === 'GET') {
                 try {
-                    // Fetch data from the API using the base URL from the database
-                    const data = await DataService.fetchDataFromAPI(endpoint.baseurl);
+                    // Execute the API call through the circuit breaker
+                    const data = await circuitBreaker.fire(endpoint.baseurl).catch(() => {
+                        // Add failed URL to the list
+                        failedUrls.push(endpoint.baseurl);
+                        // Fallback to the fallbackFunction if the request fails
+                        return fallbackFunction();
+                    });
                     // Concatenate the data to the result array
                     concatenatedData = concatenatedData.concat(data);
                 } catch (error) {
@@ -55,6 +97,14 @@ app.get('/concat/all', async (req, res) => {
             }
         }
 
+        // Replace failed URLs with fallback URL in concatenated data
+        concatenatedData = concatenatedData.map(data => {
+            if (failedUrls.includes(data.url)) {
+                data.url = 'http://localhost:3012/api/data'; // Replace with fallback URL
+            }
+            return data;
+        });
+
         // Send the concatenated data back to the client side
         res.json(concatenatedData);
     } catch (error) {
@@ -63,4 +113,5 @@ app.get('/concat/all', async (req, res) => {
     }
 });
 
-module.exports = app;
+module.exports = router;
+    
