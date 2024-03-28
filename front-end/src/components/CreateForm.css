@@ -15,16 +15,16 @@
   
   .create-form-container input[type="text"] {
     width: 100%;
-    padding: 10px;
+    padding: 15px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 10px;
   }
   
   .create-form-container button[type="submit"] {
     width: 100%;
     padding: 10px;
-    background-color: #007bff;
+    background-color: #0269d7;
     color: #fff;
     border: none;
     border-radius: 5px;

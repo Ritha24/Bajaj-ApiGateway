@@ -13,13 +13,7 @@ body {
   font-family: 'Noto Sans', sans-serif; /* Apply Noto Sans font */
 }
 
-.header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-  padding: 10px 0;
-  width: 100%; /* Make header full width */
-  
-}
+
 
 .navbar-brand img {
   margin-right: 5px; /* Add margin to the right of the logo */
