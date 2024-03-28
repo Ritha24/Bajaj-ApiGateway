@@ -9,7 +9,7 @@ const router = express.Router();
 const fallbackFunction = async () => {
     try {
         // Make a call to your fallback URL
-        const response = await axios.get('http://localhost:3012/api/data');
+        const response = await axios.get('http://192.168.1.113:3012/api/data');
         return response.data;
     } catch (error) {
         // Handle errors for the fallback call
@@ -114,4 +114,3 @@ router.get('/concat/all', async (req, res) => {
 });
 
 module.exports = router;
-    
