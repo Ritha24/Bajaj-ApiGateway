@@ -25,8 +25,8 @@ const CombinedComponent = () => {
   console.log('Rendering CombinedComponent');
 
   return (
-    <div className="container vh-100">
-      <div className="fixed-top bg-light p-3 d-flex justify-content-between align-items-center">
+    <div className="container-fluid vh-100">
+      <div className="relative-top w-100hvh bg-light p-3 d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center">
           <img src={logo} alt="Logo" style={{ width: '100px', height: '70px', marginRight: '20px', marginLeft:'20px'}} />
         </div>
