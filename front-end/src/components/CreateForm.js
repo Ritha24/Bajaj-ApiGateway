@@ -1,4 +1,3 @@
-// CreateForm.js
 import React, { useState } from 'react';
 import { addData } from '../databaseService';
 import './CreateForm.css'; // Import CSS file
@@ -17,8 +16,7 @@ const CreateForm = ({ onClose }) => {
             setFormData({ url: '', baseurl: '', method: '' });
             alert('Data added successfully');
             onClose(); // Close the modal
-            
-            
+            window.location.reload(); // Reload the page
         } catch (error) {
             console.error('Error adding data:', error);
             alert('Failed to add data. Please try again.');
