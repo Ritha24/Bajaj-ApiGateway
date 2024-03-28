@@ -2,6 +2,7 @@ const express = require('express');
 const DataService = require('../services/dataService');
 const CircuitBreaker = require('opossum');
 const axios = require('axios');
+const fetchEndpointsMiddleware = require('../middlewares/fetchEndpointsMiddleware'); // Import middleware
 
 const router = express.Router();
 
@@ -39,6 +40,9 @@ circuitBreaker.on('close', () => {
     console.log('Circuit breaker closed');
 });
 
+// Use the fetchEndpointsMiddleware
+router.use(fetchEndpointsMiddleware);
+
 // Define routes
 router.use((req, res, next) => {
     try {
@@ -48,11 +52,15 @@ router.use((req, res, next) => {
             if (endpoint.method.toUpperCase() === 'GET') {
                 router.get(endpoint.url, async (req, res) => {
                     try {
-                        // Execute the API call through the circuit breaker
-                        const data = await circuitBreaker.fire(endpoint.baseurl).catch(() => {
+                        // Fetch the base URL associated with the endpoint from the database
+                        const baseURL = await DataService.fetchBaseURL(endpoint.id); // Assuming fetchBaseURL fetches the base URL from the database using the endpoint ID
+
+                        // Execute the API call through the circuit breaker with the fetched base URL
+                        const data = await circuitBreaker.fire(baseURL).catch(() => {
                             // Fallback to the fallbackFunction if the request fails
                             return fallbackFunction();
                         });
+
                         // Send the data from the API back to the client side
                         res.json(data);
                     } catch (error) {
