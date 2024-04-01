@@ -50,16 +50,3 @@ export const updateData = async (id, url, baseurl, method) => {
     }
 };
 
-// Add a function to fetch the updated value
-export const fetchUpdatedValue = async () => {
-    try {
-        const response = await fetch('http://localhost:5001/api/updatedValue');
-        if (!response.ok) {
-            throw new Error('Failed to fetch updated value');
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        throw new Error('Failed to fetch updated value. Please try again.');
-    }
-};

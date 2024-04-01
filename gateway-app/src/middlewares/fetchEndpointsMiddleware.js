@@ -8,6 +8,9 @@ module.exports = async (req, res, next) => {
         
         // Assuming the response contains the endpoints data
         req.endpoints = response.data;
+
+        // Log the fetched endpoints
+        console.log('Fetched endpoints:', req.endpoints);
         
         next();
     } catch (error) {

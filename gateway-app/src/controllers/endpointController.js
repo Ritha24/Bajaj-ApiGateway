@@ -1,13 +1,14 @@
-//endpointsController.js
+// endpointsController.js
 const express = require('express');
 const DataService = require('../services/dataService');
 const CircuitBreaker = require('opossum');
 const axios = require('axios');
+const fetchEndpointsMiddleware = require('../middlewares/fetchEndpointsMiddleware'); // Import the middleware
 
 const router = express.Router();
 
 // Define a fallback function
-const fallbackFunction = async () => {
+const fallbackFunction = async (originalUrl) => {
     try {
         // Make a call to your fallback URL
         const response = await axios.get('http://192.168.1.113:3012/api/data');
@@ -40,22 +41,39 @@ circuitBreaker.on('close', () => {
     console.log('Circuit breaker closed');
 });
 
-// Define routes
-router.use((req, res, next) => {
+
+// Define routes dynamically based on fetched endpoints
+router.use(fetchEndpointsMiddleware); // Place the middleware before defining routes
+
+router.use(async (req, res, next) => {
     try {
         // Loop through fetched endpoints and define routes dynamically
         req.endpoints.forEach(endpoint => {
             // Check if the method is GET
             if (endpoint.method.toUpperCase() === 'GET') {
-                router.get(endpoint.url, async (req, res) => {
+                // Dynamically define GET routes based on endpoint.url
+                const routeUrl = endpoint.url.toLowerCase(); // Ensure URL is lowercase for consistency
+                router.get(routeUrl, async (req,res) => {
                     try {
-                        // Execute the API call through the circuit breaker
-                        const data = await circuitBreaker.fire(endpoint.baseurl).catch(() => {
-                            // Fallback to the fallbackFunction if the request fails
-                            return fallbackFunction();
-                        });
+                        // Loop through fetched endpoints
+                        for (const endpoint of req.endpoints) {
+                            // Check if the method is GET
+                            if (endpoint.url === routeUrl) {
+                                try {
+                                    // Execute the API call through the circuit breaker
+                                    const data = await circuitBreaker.fire(endpoint.baseurl).catch(() => {
+                                        // Fallback to the fallbackFunction if the request fails
+                                        return fallbackFunction(endpoint.baseurl);
+                                    });
+                                    res.json(data);
+
+                                } catch (error) {
+                                    // Handle errors for individual API requests
+                                    console.error(`Error fetching data from API for URL ${endpoint.baseurl}:`, error);
+                                }
+                            }   
+                        }
                         // Send the data from the API back to the client side
-                        res.json(data);
                     } catch (error) {
                         // Handle circuit breaker errors
                         console.error('Circuit breaker error:', error);
@@ -64,13 +82,13 @@ router.use((req, res, next) => {
                 });
             }
         });
+
         next();
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 // Route to concatenate responses from all endpoints in the database
 router.get('/concat/all', async (req, res) => {
     try {
@@ -87,7 +105,7 @@ router.get('/concat/all', async (req, res) => {
                         // Add failed URL to the list
                         failedUrls.push(endpoint.baseurl);
                         // Fallback to the fallbackFunction if the request fails
-                        return fallbackFunction();
+                        return fallbackFunction(endpoint.baseurl);
                     });
                     // Concatenate the data to the result array
                     concatenatedData = concatenatedData.concat(data);
@@ -107,7 +125,7 @@ router.get('/concat/all', async (req, res) => {
         });
 
         // Send the concatenated data back to the client side
-        res.json(concatenatedData);
+        res.json(concatenatedData); // Send response outside the loop
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
