@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font - Poppins -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f3f3;
+        }
+        .error {
+            color: red;
+            font-size: 0.875rem;
+        }
+        .container{
+            width:500px;
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            padding: 20px; 
+            margin:auto; 
+            margin-top: 70px;
+            background-color: white;
+        }
+        #submitBtn {
+            display: block; 
+            margin: 30px auto;
+            width: 100px;   
+        }
+        h1 {
+            font-weight:bold; 
+            margin-top: 20px; 
+            font-size: xx-large;
+        }
+        .form-control:focus {
+        border-color: #93c6fc; 
+        box-shadow: 0 0 0 0.01rem rgba(0, 123, 255, 0.25); 
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4 text-center">Job Application Form</h1>
+        <form id="jobApplicationForm">
+            <div class="mb-3">
+                <label for="fullName" class="form-label">Full Name:</label>
+                <input type="text" class="form-control" id="fullName" name="fullName" autocomplete="off">
+                <div id="fullNameError" class="error"></div>
+            </div>
+    
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" autocomplete="off">
+                <div id="emailError" class="error"></div>
+            </div>
+    
+            <div class="mb-3">
+                <label for="phoneNumber" class="form-label">Phone Number:</label>
+                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" autocomplete="off">
+                <div id="phoneNumberError" class="error"></div>
+            </div>
+    
+            <div class="mb-3">
+                <label for="address" class="form-label">Address:</label>
+                <textarea class="form-control" id="address" name="address" autocomplete="off"></textarea>
+                <div id="addressError" class="error"></div>
+            </div>
+    
+            <div class="mb-3">
+                <label for="resume" class="form-label">Resume Upload:</label>
+                <input type="file" class="form-control" id="resume" name="resume">
+                <div id="resumeError" class="error"></div>
+            </div>
+    
+            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Submit</button>
+        </form>
+    </div>
+    
+    <!-- Bootstrap JS and Popper.js (required for Bootstrap dropdowns, tooltips, and popovers) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        const form = document.getElementById('jobApplicationForm');
+        const fullName = document.getElementById('fullName');
+        const email = document.getElementById('email');
+        const phoneNumber = document.getElementById('phoneNumber');
+        const address = document.getElementById('address');
+        const resume = document.getElementById('resume');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function validateName() {
+            const fullNameValue = fullName.value.trim();
+            if (fullNameValue === '') {
+                showError('fullName', 'Please enter your full name.');
+                return false;
+            } else if (!/^[a-zA-Z\s]+$/.test(fullNameValue)) {
+                showError('fullName', 'Name must contain only letters.');
+                return false;
+            } else {
+                showSuccess('fullName');
+                return true;
+            }
+        }
+
+        function validateEmail() {
+            const emailValue = email.value.trim();
+            if (emailValue === '') {
+                showError('email', 'Please enter your email address.');
+                return false;
+            } else if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(emailValue)) {
+                showError('email', 'Please enter a valid email address.');
+                return false;
+            } else {
+                showSuccess('email');
+                return true;
+            }
+        }
+
+        function validatePhoneNumber() {
+            const phoneNumberValue = phoneNumber.value.trim();
+            if (phoneNumberValue === '') {
+                showError('phoneNumber', 'Please enter your phone number.');
+                return false;
+            } else if (!/^\d{3}-\d{3}-\d{4}$/.test(phoneNumberValue)) {
+                showError('phoneNumber', 'Please enter a valid phone number (e.g., XXX-XXX-XXXX).');
+                return false;
+            } else {
+                showSuccess('phoneNumber');
+                return true;
+            }
+        }
+
+        function validateAddress() {
+            const addressValue = address.value.trim();
+            if (addressValue === '') {
+                showError('address', 'Please enter your address.');
+                return false;
+            } else if (addressValue.length < 10) {
+                showError('address', 'Address must be at least 10 characters long.');
+                return false;
+            } else {
+                showSuccess('address');
+                return true;
+            }
+        }
+
+        function validateResume() {
+            const file = resume.files[0];
+            if (!file) {
+                showError('resume', 'Please upload your resume.');
+                return false;
+            } else {
+                const fileSize = file.size / (1024 * 1024); // Size in MB
+                const allowedExtensions = /(\.pdf|\.docx)$/i;
+                if (!allowedExtensions.test(file.name)) {
+                    showError('resume', 'Only PDF and DOCX files are allowed.');
+                    return false;
+                } else if (fileSize > 5) {
+                    showError('resume', 'File size must be less than 5 MB.');
+                    return false;
+                } else {
+                    showSuccess('resume');
+                    return true;
+                }
+            }
+        }
+
+        function showError(inputId, message) {
+            const inputElement = document.getElementById(inputId);
+            const errorElement = document.getElementById(`${inputId}Error`);
+            inputElement.classList.add('error');
+            errorElement.innerText = message;
+        }
+
+        function showSuccess(inputId) {
+            const inputElement = document.getElementById(inputId);
+            const errorElement = document.getElementById(`${inputId}Error`);
+            inputElement.classList.remove('error');
+            errorElement.innerText = '';
+        }
+
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission
+            const isNameValid = validateName();
+            const isEmailValid = validateEmail();
+            const isPhoneNumberValid = validatePhoneNumber();
+            const isAddressValid = validateAddress();
+            const isResumeValid = validateResume();
+
+            if (isNameValid && isEmailValid && isPhoneNumberValid && isAddressValid && isResumeValid) {
+                alert('Data added successfully!');
+                const formData = {
+                    fullName: fullName.value.trim(),
+                    email: email.value.trim(),
+                    phoneNumber: phoneNumber.value.trim(),
+                    address: address.value.trim(),
+                    resumeFileName: resume.files[0].name
+                };
+                const formDataJSON = JSON.stringify(formData);
+                console.log(formDataJSON);
+                // Clear form fields
+                form.reset(); // Reset the form
+                
+                // Clear any remaining error messages
+                const errorElements = document.querySelectorAll('.error');
+                errorElements.forEach(element => {
+                    element.innerText = '';
+                });
+
+                // Disable submit button after successful submission
+                submitBtn.disabled = true;
+            }
+        }
+
+        fullName.addEventListener('keyup', validateName);
+        email.addEventListener('keyup', validateEmail);
+        phoneNumber.addEventListener('keyup', validatePhoneNumber);
+        address.addEventListener('keyup', validateAddress);
+        resume.addEventListener('change', validateResume);
+
+        form.addEventListener('keyup', function () {
+            if (validateName() && validateEmail() && validatePhoneNumber() && validateAddress() && validateResume()) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        });
+
+        form.addEventListener('change', function () {
+            if (validateName() && validateEmail() && validatePhoneNumber() && validateAddress() && validateResume()) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        });
+        form.addEventListener('submit', validateForm);
+    </script>
+</body>
+</html>
