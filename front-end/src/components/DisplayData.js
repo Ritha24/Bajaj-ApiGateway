@@ -54,7 +54,7 @@ const DataDisplay = ({ isDataRefreshNeeded }) => {
 
   return (
     <div className="container" style={{ fontFamily: 'Roboto, sans-serif' }}>
-      <h3 className="mt-4">Data Display</h3>
+      <h3 className="mt-4">API Endpoints</h3>
       {(!isDataLoaded || isDataRefreshNeeded) && (
         <div className="row mt-3">
           <div className="col">

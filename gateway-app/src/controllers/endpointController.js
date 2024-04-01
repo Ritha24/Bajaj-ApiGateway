@@ -11,6 +11,7 @@ const router = express.Router();
 const fallbackFunction = async (originalUrl) => {
     try {
         // Make a call to your fallback URL
+        console.error(`Failed to fetch data from ${originalUrl}. Falling back to default URL`);
         const response = await axios.get('http://192.168.1.113:3012/api/data');
         return response.data;
     } catch (error) {
@@ -70,6 +71,7 @@ router.use(async (req, res, next) => {
                                 } catch (error) {
                                     // Handle errors for individual API requests
                                     console.error(`Error fetching data from API for URL ${endpoint.baseurl}:`, error);
+                                    res.status(404).json({ error: 'Server is down' }); // Custom error message
                                 }
                             }   
                         }
