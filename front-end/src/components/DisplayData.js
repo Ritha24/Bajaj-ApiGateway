@@ -46,6 +46,7 @@ const DataDisplay = ({ isDataRefreshNeeded }) => {
     }
   };
 
+  
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditItemData({ ...editItemData, [name]: value });

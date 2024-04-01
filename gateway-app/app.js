@@ -1,3 +1,4 @@
+//app.js
 const express = require('express');
 const fetchEndpointsMiddleware = require('./src/middlewares/fetchEndpointsMiddleware'); // Adjust the path accordingly
 const endpointController = require('./src/controllers/endpointController');

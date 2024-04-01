@@ -1,17 +1,17 @@
-const mysql = require('mysql');
-const dbConfig = require('../configs/database');
+// fetchEndpointsMiddleware.js
+const axios = require('axios');
 
-const pool = mysql.createPool(dbConfig);
-
-module.exports = (req, res, next) => {
-    const sql = 'SELECT * FROM endpoints';
-    pool.query(sql, (error, results) => {
-        if (error) {
-            console.error('Error fetching endpoints from database:', error);
-            res.status(500).json({ error: 'Failed to fetch endpoints from database' });
-        } else {
-            req.endpoints = results;
-            next();
-        }
-    });
+module.exports = async (req, res, next) => {
+    try {
+        const fetchDataEndpoint = 'http://localhost:5001/api/fetchData';
+        const response = await axios.get(fetchDataEndpoint);
+        
+        // Assuming the response contains the endpoints data
+        req.endpoints = response.data;
+        
+        next();
+    } catch (error) {
+        console.error('Error fetching endpoints from endpoint service:', error);
+        res.status(500).json({ error: 'Failed to fetch endpoints from endpoint service' });
+    }
 };
