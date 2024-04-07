@@ -12,7 +12,7 @@ const fallbackFunction = async (originalUrl) => {
     try {
         // Make a call to your fallback URL
         console.error(`Failed to fetch data from ${originalUrl}. Falling back to default URL`);
-        const response = await axios.get('http://192.168.1.113:3012/api/data');
+        const response = await axios.get('http://localhost:3012/api/data');
         return response.data;
     } catch (error) {
         // Handle errors for the fallback call
@@ -91,11 +91,12 @@ router.use(async (req, res, next) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 // Route to concatenate responses from all endpoints in the database
 router.get('/concat/all', async (req, res) => {
     try {
         let concatenatedData = [];
-        let failedUrls = [];
+        let failedUrls = new Set(); // Use a Set to store failed URLs
 
         // Loop through fetched endpoints
         for (const endpoint of req.endpoints) {
@@ -104,8 +105,8 @@ router.get('/concat/all', async (req, res) => {
                 try {
                     // Execute the API call through the circuit breaker
                     const data = await circuitBreaker.fire(endpoint.baseurl).catch(() => {
-                        // Add failed URL to the list
-                        failedUrls.push(endpoint.baseurl);
+                        // Add failed URL to the set
+                        failedUrls.add(endpoint.baseurl);
                         // Fallback to the fallbackFunction if the request fails
                         return fallbackFunction(endpoint.baseurl);
                     });
@@ -114,20 +115,21 @@ router.get('/concat/all', async (req, res) => {
                 } catch (error) {
                     // Handle errors for individual API requests
                     console.error(`Error fetching data from API for URL ${endpoint.baseurl}:`, error);
+                    // Continue to the next iteration if an error occurs
+                    continue;
                 }
             }
         }
 
         // Replace failed URLs with fallback URL in concatenated data
-        concatenatedData = concatenatedData.map(data => {
-            if (failedUrls.includes(data.url)) {
-                data.url = 'http://localhost:3012/api/data'; // Replace with fallback URL
+        for (let data of concatenatedData) {
+            if (failedUrls.has(data.url)) { // Check if the failedUrls set contains the URL
+                data.url = 'http://192.168.1.113:3012/api/data'; // Replace with fallback URL
             }
-            return data;
-        });
+        }
 
         // Send the concatenated data back to the client side
-        res.json(concatenatedData); // Send response outside the loop
+        res.json(concatenatedData);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
